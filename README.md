@@ -28,18 +28,18 @@ An app that allows the user to scan barcodes on the products in their refrigerat
 
 **Required Features**
 
-1. Barcode scannig - users can scan barcodes on food items using the phone camera.
-2. Item information storage - the app stores prodict infomation associated with the barcode.
-3. Manual item entry - users can manually enter the item information associated with an unknown barcode and that will auto fill data when that code is scanned again.
+1. Barcode scanning - users can scan barcodes on food items using the phone camera.
+2. Item information storage - the app stores product information associated with the barcode.
+3. Manual item entry - users can manually enter the item information associated with an unknown barcode, and that will auto-fill data when that code is scanned again.
 4. Expiration date tracking - users can enter expiration dates for each item.
-5. Expiration notifications - app sends notificaitons when items are close to expiring.
-6. Inventory list - users can view a list of all items stored in all refigerators and freezers.
+5. Expiration notifications - app sends notifications when items are close to expiring.
+6. Inventory list - users can view a list of all items stored in all refrigerators and freezers.
 
 **Optional Features**
 
-1. Recipe suggestions - AI suggests recipes based on the items currently stores
-2. Cloud sync - sync inventories across mutiple devices
-3. Grocery list features - features like a shoping cart or having the price and calorie count of items in inventory
+1. Recipe suggestions - AI suggests recipes based on the items currently stored
+2. Cloud sync - sync inventories across multiple devices
+3. Grocery list features - features like a shopping cart or having the price and calorie count of items in inventory
 
 ### 2. Screen Archetypes
 
@@ -49,13 +49,13 @@ An app that allows the user to scan barcodes on the products in their refrigerat
   - filter by location (mainfridge, garagefridge, freezer, etc)
 - Barcode scanner 
   - scan barcode using phone camera
-  - retrives saved item data
+  - retrieves saved item data
 - Item edit screen
   - manual enter item information
   - set expiration date
   - assign storage location
 - Item detail screen
-  - view detailed information about item
+  - view detailed information about the item
   - edit expiration date or location
   - delete item from inventory
 - Recipe suggestion screen (optional)
