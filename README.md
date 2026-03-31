@@ -106,19 +106,21 @@ An app that allows the user to scan barcodes on the products in their refrigerat
 
 ## GitHub Project board
 
-[Add screenshot of your Project Board with three milestones visible in
-this section]
+<img width="1341" height="438" alt="image" src="https://github.com/user-attachments/assets/42c25eed-dfd9-4db5-8383-fd448bc7bced" />
 <img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
 
 ## Issue cards
 
-- [Add screenshot of your Project Board with the issues that you've been working on for this unit's milestone] <img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
-- [Add screenshot of your Project Board with the issues that you're working on in the **NEXT sprint**. It should include issues for next unit with assigned owners.] <img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
+<img width="1318" height="577" alt="image" src="https://github.com/user-attachments/assets/d17ff3f0-7967-4d33-8911-83925f44d7fe" />
+<img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
+<img width="1197" height="923" alt="image" src="https://github.com/user-attachments/assets/cec7e0a0-3b27-4528-b070-180e5ed4702d" />
+ <img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
 
 ## Issues worked on this sprint
+- Camera scaning barcode
+  
+![scanner](https://github.com/user-attachments/assets/001ed03c-60bc-45d7-86aa-09f99c460484)
 
-- List the issues you completed this sprint
-- [Add giphy that shows current build progress for Milestone 2. Note: We will be looking for progression of work between Milestone 2 and 3. Make sure your giphys are not duplicated and clearly show the change from Sprint 1 to 2.]
 
 <br>
 
