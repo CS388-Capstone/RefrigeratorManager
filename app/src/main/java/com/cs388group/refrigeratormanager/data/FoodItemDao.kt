@@ -1,4 +1,4 @@
-package com.cs388group.refrigeratormanager
+package com.cs388group.refrigeratormanager.data
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,12 +6,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cs388group.refrigeratormanager.model.FoodItem
+import com.cs388group.refrigeratormanager.data.FoodItem
 
 @Dao
 interface FoodItemDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertItem(item: FoodItem)
 
     @Update

@@ -1,9 +1,10 @@
-package com.cs388group.refrigeratormanager
+package com.cs388group.refrigeratormanager.data
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.cs388group.refrigeratormanager.model.FoodItem
+import com.cs388group.refrigeratormanager.data.FoodItem
 
 @Database(entities = [FoodItem::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {

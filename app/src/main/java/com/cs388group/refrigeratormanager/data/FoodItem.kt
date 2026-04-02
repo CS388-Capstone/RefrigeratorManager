@@ -1,4 +1,4 @@
-package com.cs388group.refrigeratormanager.model
+package com.cs388group.refrigeratormanager.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
