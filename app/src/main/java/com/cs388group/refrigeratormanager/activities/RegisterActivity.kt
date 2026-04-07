@@ -15,6 +15,9 @@ import com.cs388group.refrigeratormanager.R
 import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -75,10 +78,23 @@ class RegisterActivity : AppCompatActivity() {
                                 finish()
                             },
                             onFailure = {
-                                Toast.makeText(this, "Error registering user", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, "Error in user registration.", Toast.LENGTH_SHORT).show()
                                 Log.e("RegisterActivity", "Error registering user", it)
                             }
                         )
+                    } else {
+                        val message = when (task.exception) {
+                            is FirebaseAuthWeakPasswordException -> "Password is too weak."
+                            is FirebaseAuthInvalidCredentialsException -> "Invalid email address."
+                            is FirebaseAuthUserCollisionException -> "An account with this email already exists."
+                            else -> {
+                                task.exception?.message ?: "Registration failed."
+                            }
+                        }
+
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                        Log.e("RegisterActivity", "Firebase error registering user", task.exception)
+
                     }
                 }
         }
