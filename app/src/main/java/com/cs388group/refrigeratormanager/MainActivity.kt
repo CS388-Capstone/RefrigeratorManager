@@ -14,11 +14,16 @@ import com.cs388group.refrigeratormanager.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.cs388group.refrigeratormanager.activities.LoginActivity
 import com.cs388group.refrigeratormanager.data.AppDatabase
 import com.cs388group.refrigeratormanager.data.FoodItemDao
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 class MainActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
+    private lateinit var auth: FirebaseAuth
     private lateinit var foodItemDao: FoodItemDao
     private lateinit var binding: ActivityMainBinding
 
@@ -31,59 +36,67 @@ class MainActivity : AppCompatActivity() {
         db = AppDatabase.getDatabase(this)
         foodItemDao = db.foodItemDao()
 
+        auth = Firebase.auth
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        lifecycleScope.launch {
-            val testItem = FoodItem(
-                barcode = "123456789",
-                name = "Milk",
-                expirationDate = "2026-04-10",
-                storageLocation = "Fridge 1",
-                calories = 150
-            )
+        val currentUser = auth.currentUser
 
-            foodItemDao.insertItem(testItem)
+        if (currentUser != null) {
 
-            val allItems = foodItemDao.getAllItems()
-            Log.d("DATABASE_TEST", allItems.toString())
-        }
+            lifecycleScope.launch {
+                val testItem = FoodItem(
+                    barcode = "123456789",
+                    name = "Milk",
+                    expirationDate = "2026-04-10",
+                    storageLocation = "Fridge 1",
+                    calories = 150
+                )
 
-        /*
-        binding.btnScan.setOnClickListener {
-            val intent = Intent(this, BarcodeScannerActivity::class.java)
-            startActivity(intent)
-        }
-         */
+                foodItemDao.insertItem(testItem)
 
-        val homeFragment = HomeFragment()
-        val scanFragment = ScanFragment()
-        val genAiFragment = GenAiFragment()
-        val settingsFragment = SettingsFragment()
-
-
-
-
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            lateinit var fragment: Fragment
-            when (item.itemId) {
-                R.id.menu_item_home -> fragment = homeFragment
-                R.id.menu_item_scan -> fragment = scanFragment
-                R.id.menu_item_genai -> fragment = genAiFragment
-                R.id.menu_item_settings -> fragment = settingsFragment
+                val allItems = foodItemDao.getAllItems()
+                Log.d("DATABASE_TEST", allItems.toString())
             }
-            replaceFragment(fragment)
-            true
+
+            /*
+            binding.btnScan.setOnClickListener {
+                val intent = Intent(this, BarcodeScannerActivity::class.java)
+                startActivity(intent)
+            }
+             */
+
+            val homeFragment = HomeFragment()
+            val scanFragment = ScanFragment()
+            val genAiFragment = GenAiFragment()
+            val settingsFragment = SettingsFragment()
+
+
+            val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+
+            bottomNavigationView.setOnItemSelectedListener { item ->
+                lateinit var fragment: Fragment
+                when (item.itemId) {
+                    R.id.menu_item_home -> fragment = homeFragment
+                    R.id.menu_item_scan -> fragment = scanFragment
+                    R.id.menu_item_genai -> fragment = genAiFragment
+                    R.id.menu_item_settings -> fragment = settingsFragment
+                }
+                replaceFragment(fragment)
+                true
+            }
+
+            bottomNavigationView.selectedItemId = R.id.menu_item_home
+            replaceFragment(HomeFragment())
+
+        } else { // user is not signed in
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
-
-        bottomNavigationView.selectedItemId = R.id.menu_item_home
-        replaceFragment(HomeFragment())
-
     }
 
     private fun replaceFragment(fragment: Fragment) {
