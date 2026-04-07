@@ -2,6 +2,7 @@ package com.cs388group.refrigeratormanager
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -10,10 +11,15 @@ import com.cs388group.refrigeratormanager.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.cs388group.refrigeratormanager.activities.LoginActivity
+import com.cs388group.refrigeratormanager.services.OpenAIService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -34,7 +40,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         val currentUser = auth.currentUser
+        // OPEN AI TEST
+        Log.d("OPENAI_KEY_CHECK", "key starts with: ${BuildConfig.OPENAI_API_KEY}")
+        Log.d("OPENAI_KEY_LEN", "length: ${BuildConfig.OPENAI_API_KEY.length}")
+        /*
+        lifecycleScope.launch {
+            try {
+                val reply = withContext(Dispatchers.IO) {
+                    OpenAIService.sendMessage("Give me a fun fact about cats")
+                }
 
+                Log.d("OPENAI_RESPONSE", reply)
+
+            } catch (e: Exception) {
+                Log.e("OPENAI_ERROR", "Error: ${e.message}", e)
+            }
+        }
+        
+         */
         if (currentUser != null) {
 
             /*
