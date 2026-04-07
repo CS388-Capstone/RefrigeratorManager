@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import com.cs388group.refrigeratormanager.R
 import com.cs388group.refrigeratormanager.activities.LoginActivity
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 class SettingsFragment : Fragment() {
 
@@ -25,7 +27,7 @@ class SettingsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_settings, container, false)
 
-        auth = FirebaseAuth.getInstance()
+        auth = Firebase.auth
 
         val logoutButton = view.findViewById<Button>(R.id.btnLogout)
         logoutButton.setOnClickListener {
