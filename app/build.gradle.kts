@@ -43,6 +43,9 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+    //RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
     //Room and Dao
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
