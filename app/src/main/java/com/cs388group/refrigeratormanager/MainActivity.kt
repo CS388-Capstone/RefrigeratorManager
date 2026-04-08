@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         val invitationRepo = InvitationRepository()
 
+        /*
         invitationRepo.sendInvitation("Vnm9VCsnxoY4GIRF9y1x", "test", "test2@example.com",
             onSuccess = {
 
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
 
             }
         )
+         */
 
         if (currentFirebaseUser != null) {
 
