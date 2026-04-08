@@ -11,7 +11,7 @@ class UserRepository {
         val userData = hashMapOf(
             "displayName" to displayName,
             "email" to email,
-            "familyId" to null
+            "groupId" to null
         )
         db.collection("users").document(uid)
             .set(userData)
@@ -30,7 +30,7 @@ class UserRepository {
 
     fun updateGroup(uid: String, groupId: String?) {
         db.collection("users").document(uid)
-            .update("familyId", groupId)
+            .update("groupId", groupId)
     }
 
 }
