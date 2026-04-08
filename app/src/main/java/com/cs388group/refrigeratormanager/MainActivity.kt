@@ -2,6 +2,7 @@ package com.cs388group.refrigeratormanager
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -10,7 +11,11 @@ import com.cs388group.refrigeratormanager.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
 import com.cs388group.refrigeratormanager.activities.LoginActivity
+import com.cs388group.refrigeratormanager.data.InvitationRepository
+import com.cs388group.refrigeratormanager.data.InviteUI
+import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -33,9 +38,22 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val currentUser = auth.currentUser
+        val currentFirebaseUser = auth.currentUser
 
-        if (currentUser != null) {
+        val invitationRepo = InvitationRepository()
+
+        /*
+        invitationRepo.sendInvitation("Vnm9VCsnxoY4GIRF9y1x", "test", "test2@example.com",
+            onSuccess = {
+
+            },
+            onFailure = {
+
+            }
+        )
+         */
+
+        if (currentFirebaseUser != null) {
 
             /*
             binding.btnScan.setOnClickListener {

@@ -46,6 +46,8 @@ dependencies {
     //Room and Dao
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     ksp(libs.androidx.room.compiler)
 
     // CameraX
