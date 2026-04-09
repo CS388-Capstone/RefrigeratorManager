@@ -13,15 +13,17 @@ class FoodItemRepository {
         locationId: String,
         upc: String,
         expirationDate: Timestamp,
-        quantity: Int = 1
+        quantity: Int = 1,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
     ) {
-        val locationRef = db.collection("groups")
+        val foodItemsRef = db.collection("groups")
             .document(groupId)
             .collection("locations")
             .document(locationId)
             .collection("foodItems")
 
-        locationRef
+        foodItemsRef
             .whereEqualTo("upc", upc)
             .whereEqualTo("expirationDate", expirationDate)
             .get()
@@ -32,21 +34,27 @@ class FoodItemRepository {
                         "expirationDate" to expirationDate,
                         "quantity" to quantity
                     )
+                    foodItemsRef.add(item)
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { onFailure(it) }
                 } else {
                     val doc = snapshot.documents[0]
                     val currentQuantity = (doc.getLong("quantity") ?: 0)
                     doc.reference.update("quantity", currentQuantity + quantity)
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { onFailure(it) }
                 }
             }
+            .addOnFailureListener { onFailure(it) }
     }
 
-    fun removeFoodItem(groupId: String, locationId: String, upc: String, quantityToRemove: Int = 1) {
+    fun removeFoodItem(groupId: String, locationId: String, foodItemId: String, quantityToRemove: Int = 1) {
         val docRef = db.collection("groups")
             .document(groupId)
             .collection("locations")
             .document(locationId)
             .collection("foodItems")
-            .document(upc)
+            .document(foodItemId)
 
         docRef.get().addOnSuccessListener { doc ->
             if (doc.exists()) {
@@ -56,7 +64,6 @@ class FoodItemRepository {
                 } else {
                     docRef.delete()
                 }
-
             }
         }
     }
@@ -73,5 +80,4 @@ class FoodItemRepository {
                 onResult(items)
             }
     }
-
 }
