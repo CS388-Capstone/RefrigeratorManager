@@ -13,8 +13,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
 import com.cs388group.refrigeratormanager.activities.LoginActivity
-import com.cs388group.refrigeratormanager.data.InvitationRepository
-import com.cs388group.refrigeratormanager.data.InviteUI
 import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
@@ -23,6 +21,7 @@ import com.google.firebase.auth.auth
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityMainBinding
+    private var userRepo = UserRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,20 +39,22 @@ class MainActivity : AppCompatActivity() {
 
         val currentFirebaseUser = auth.currentUser
 
-        val invitationRepo = InvitationRepository()
-
-        /*
-        invitationRepo.sendInvitation("Vnm9VCsnxoY4GIRF9y1x", "test", "test2@example.com",
-            onSuccess = {
-
-            },
-            onFailure = {
-
-            }
-        )
-         */
 
         if (currentFirebaseUser != null) {
+
+            userRepo.getUser(currentFirebaseUser.uid) { userData ->
+                if (userData == null) {
+                    Log.e("MainActivity", "User was returned as null, this shouldn't happen since they just logged in.")
+                    return@getUser
+                }
+
+                val groupId = userData["groupId"] as? String
+                if (groupId == null) {
+                    Log.w("MainActivity", "User is not in a group, redirecting to Group Onboarding")
+                    startActivity(Intent(this, GroupOnboardingActivity::class.java))
+                    finish()
+                }
+            }
 
             /*
             binding.btnScan.setOnClickListener {
