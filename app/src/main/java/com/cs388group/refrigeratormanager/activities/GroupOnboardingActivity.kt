@@ -36,15 +36,12 @@ class GroupOnboardingActivity : AppCompatActivity() {
 
         userRepo.getUser(user!!.uid) { userData ->
             if (userData == null) {
-                Log.e("MainActivity", "User was returned as null, this shouldn't happen since they just logged in.")
+                Log.e("GroupOnboardingActivity", "User was returned as null, this shouldn't happen since they just logged in.")
                 return@getUser
             }
 
             val groupId = userData["groupId"] as? String
-            if (groupId == null) {
-                startActivity(Intent(this, GroupOnboardingActivity::class.java))
-                finish()
-            } else {
+            if (groupId != null) {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
