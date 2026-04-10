@@ -1,6 +1,7 @@
 package com.cs388group.refrigeratormanager
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -122,12 +123,11 @@ class BarcodeScannerActivity : AppCompatActivity() {
     }
 
     private fun onBarcodeDetected(barcode: String) {
-        // Here you can handle the scanned barcode, e.g., pass it back to the calling activity
         runOnUiThread {
-            Toast.makeText(this, "Scanned: $barcode", Toast.LENGTH_LONG).show()
-            // intent.putExtra("SCAN_RESULT", barcode)
-            // setResult(RESULT_OK, intent)
-            // finish()
+            val resultIntent = Intent()
+            resultIntent.putExtra("SCAN_RESULT", barcode)
+            setResult(RESULT_OK, resultIntent)
+            finish()
         }
     }
 

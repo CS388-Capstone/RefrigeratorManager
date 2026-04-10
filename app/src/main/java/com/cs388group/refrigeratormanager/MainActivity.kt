@@ -14,6 +14,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.cs388group.refrigeratormanager.activities.LoginActivity
 import com.cs388group.refrigeratormanager.services.OpenAIService
+import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
+import com.cs388group.refrigeratormanager.activities.LoginActivity
+import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -24,6 +27,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityMainBinding
+    private var userRepo = UserRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +63,24 @@ class MainActivity : AppCompatActivity() {
         
          */
         if (currentUser != null) {
+        val currentFirebaseUser = auth.currentUser
+
+
+        if (currentFirebaseUser != null) {
+
+            userRepo.getUser(currentFirebaseUser.uid) { userData ->
+                if (userData == null) {
+                    Log.e("MainActivity", "User was returned as null, this shouldn't happen since they just logged in.")
+                    return@getUser
+                }
+
+                val groupId = userData["groupId"] as? String
+                if (groupId == null) {
+                    Log.w("MainActivity", "User is not in a group, redirecting to Group Onboarding")
+                    startActivity(Intent(this, GroupOnboardingActivity::class.java))
+                    finish()
+                }
+            }
 
             /*
             binding.btnScan.setOnClickListener {

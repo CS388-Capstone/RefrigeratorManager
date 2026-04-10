@@ -74,7 +74,7 @@ class RegisterActivity : AppCompatActivity() {
                             displayName = fullName,
                             email = email,
                             onSuccess = {
-                                startActivity(Intent(this, MainActivity::class.java))
+                                startActivity(Intent(this, GroupOnboardingActivity::class.java))
                                 finish()
                             },
                             onFailure = {

@@ -15,4 +15,16 @@
     <string name="log_out">Log Out</string>
     <string name="full_name">Full Name</string>
     <string name="confirm_password">Confirm Password</string>
+    <string name="join_group">Join a Group</string>
+    <string name="invited_by">Invited by</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="group_name">Group Name</string>
+    <string name="create_group">Create a Group</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="pending_invitations">Pending Invitations</string>
 </resources>
