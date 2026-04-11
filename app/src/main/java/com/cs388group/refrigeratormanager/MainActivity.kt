@@ -15,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.cs388group.refrigeratormanager.activities.LoginActivity
 import com.cs388group.refrigeratormanager.services.OpenAIService
 import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
-import com.cs388group.refrigeratormanager.activities.LoginActivity
 import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
@@ -63,64 +62,72 @@ class MainActivity : AppCompatActivity() {
         
          */
         if (currentUser != null) {
-        val currentFirebaseUser = auth.currentUser
+            val currentFirebaseUser = auth.currentUser
 
 
-        if (currentFirebaseUser != null) {
+            if (currentFirebaseUser != null) {
 
-            userRepo.getUser(currentFirebaseUser.uid) { userData ->
-                if (userData == null) {
-                    Log.e("MainActivity", "User was returned as null, this shouldn't happen since they just logged in.")
-                    return@getUser
+                userRepo.getUser(currentFirebaseUser.uid) { userData ->
+                    if (userData == null) {
+                        Log.e(
+                            "MainActivity",
+                            "User was returned as null, this shouldn't happen since they just logged in."
+                        )
+                        return@getUser
+                    }
+
+                    val groupId = userData["groupId"] as? String
+                    if (groupId == null) {
+                        Log.w(
+                            "MainActivity",
+                            "User is not in a group, redirecting to Group Onboarding"
+                        )
+                        startActivity(Intent(this, GroupOnboardingActivity::class.java))
+                        finish()
+                    }
                 }
 
-                val groupId = userData["groupId"] as? String
-                if (groupId == null) {
-                    Log.w("MainActivity", "User is not in a group, redirecting to Group Onboarding")
-                    startActivity(Intent(this, GroupOnboardingActivity::class.java))
-                    finish()
-                }
-            }
-
-            /*
+                /*
             binding.btnScan.setOnClickListener {
                 val intent = Intent(this, BarcodeScannerActivity::class.java)
                 startActivity(intent)
             }
              */
 
-            val homeFragment = HomeFragment()
-            val scanFragment = ScanFragment()
-            val genAiFragment = GenAiFragment()
-            val settingsFragment = SettingsFragment()
+                val homeFragment = HomeFragment()
+                val scanFragment = ScanFragment()
+                val genAiFragment = GenAiFragment()
+                val settingsFragment = SettingsFragment()
 
 
-            val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+                val bottomNavigationView: BottomNavigationView =
+                    findViewById(R.id.bottom_navigation)
 
-            bottomNavigationView.setOnItemSelectedListener { item ->
-                lateinit var fragment: Fragment
-                when (item.itemId) {
-                    R.id.menu_item_home -> fragment = homeFragment
-                    R.id.menu_item_scan -> fragment = scanFragment
-                    R.id.menu_item_genai -> fragment = genAiFragment
-                    R.id.menu_item_settings -> fragment = settingsFragment
+                bottomNavigationView.setOnItemSelectedListener { item ->
+                    lateinit var fragment: Fragment
+                    when (item.itemId) {
+                        R.id.menu_item_home -> fragment = homeFragment
+                        R.id.menu_item_scan -> fragment = scanFragment
+                        R.id.menu_item_genai -> fragment = genAiFragment
+                        R.id.menu_item_settings -> fragment = settingsFragment
+                    }
+                    replaceFragment(fragment)
+                    true
                 }
-                replaceFragment(fragment)
-                true
+
+                bottomNavigationView.selectedItemId = R.id.menu_item_home
+                replaceFragment(HomeFragment())
+
+            } else { // user is not signed in
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
             }
-
-            bottomNavigationView.selectedItemId = R.id.menu_item_home
-            replaceFragment(HomeFragment())
-
-        } else { // user is not signed in
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
         }
     }
-
-    private fun replaceFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frame_layout, fragment)
-            .commit()
-    }
+        private fun replaceFragment(fragment: Fragment) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frame_layout, fragment)
+                .commit()
+        }
 }
+
