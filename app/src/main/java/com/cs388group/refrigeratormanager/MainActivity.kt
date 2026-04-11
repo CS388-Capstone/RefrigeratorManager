@@ -46,11 +46,82 @@ class MainActivity : AppCompatActivity() {
         // OPEN AI TEST
         Log.d("OPENAI_KEY_CHECK", "key starts with: ${BuildConfig.OPENAI_API_KEY}")
         Log.d("OPENAI_KEY_LEN", "length: ${BuildConfig.OPENAI_API_KEY.length}")
-        /*
+/*
         lifecycleScope.launch {
             try {
                 val reply = withContext(Dispatchers.IO) {
-                    OpenAIService.sendMessage("Give me a fun fact about cats")
+                    var message = """
+                        
+                    You are a recipe generator.
+
+                    Using the following ingredients:
+                    -Salmon
+                    -Rice
+                    -Cheese
+                    -Penne Pasta
+                    -Eggs
+
+                    Generate exactly 2 realistic, savory recipes that people would actually want to eat.
+
+                    IMPORTANT RULES:
+                    - You MUST return ONLY valid JSON. No extra text, no explanations, no markdown.
+                    - The JSON format must be exactly:
+                    {
+                      "recipes": [
+                        {
+                          "name": string,
+                          "calories": string,
+                          "description": string,
+                          "ingredients": {
+                            "ingredient_name": "portion"
+                          },
+                          "steps": [string]
+                        }
+                      ]
+                    }
+
+                    REQUIREMENTS:
+                    - Each recipe must include at least one key ingredient from the provided catalog.
+                    - Do NOT create unrealistic combinations (e.g., apple chowder just because apples exist).
+                    - You may include common seasonings, oils, and condiments even if they are not in the catalog.
+                    - Do NOT include ingredients that are not realistic without the main ingredient (e.g., no lobster dishes if lobster is not in the catalog).
+                    - Not all catalog ingredients must be used in every recipe.
+                    - Across all recipes, try to utilize as many catalog ingredients as possible.
+
+                    FOOD VARIETY:
+                    - Include a mix of:
+                      - breakfast meals
+                      - lunch/dinner meals
+                      - snacks
+                      - pastries or baked goods
+
+                    INGREDIENTS FORMAT:
+                    - Must be a map/object:
+                      "ingredients": {
+                        "egg": "2",
+                        "milk": "1 cup",
+                        "flour": "3/4 cup"
+                      }
+                    - Portions should be realistic and formatted like:
+                      "1 tsp", "1 cup", "1 lb", "3/4 cup", etc.
+
+                    STEPS REQUIREMENTS:
+                    - Steps must be clear, simple, and beginner-friendly.
+                    - Include specific instructions (times, temperatures when relevant).
+                    - Mention required tools (pan, oven, blender, etc.).
+                    - If a special tool is mentioned (e.g., mixer), provide a simple alternative method.
+
+                    CALORIES:
+                    - Provide a rough estimate as a string (e.g., "450 cal").
+
+                    DESCRIPTION:
+                    - Short, appealing summary of the dish.
+
+                    FINAL REMINDER:
+                    - Output ONLY valid JSON.
+                    - Do NOT include any text outside the JSON.
+                    """.trimIndent()
+                    OpenAIService.sendMessage(message)
                 }
 
                 Log.d("OPENAI_RESPONSE", reply)
@@ -59,8 +130,10 @@ class MainActivity : AppCompatActivity() {
                 Log.e("OPENAI_ERROR", "Error: ${e.message}", e)
             }
         }
-        
-         */
+
+
+ */
+
         if (currentUser != null) {
             val currentFirebaseUser = auth.currentUser
 

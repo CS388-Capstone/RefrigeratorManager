@@ -13,6 +13,13 @@
         android:layout_height="wrap_content"
         android:queryHint="Search food items" />
 
+    <Button
+        android:id="@+id/refreshRecipesButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Refresh Recipes" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recipeRecyclerView"
         android:layout_width="match_parent"

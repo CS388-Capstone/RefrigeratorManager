@@ -10,9 +10,15 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 object OpenAIService {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .callTimeout(150, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
     private const val URL = "https://api.openai.com/v1/chat/completions"
 
     fun sendMessage(userMessage: String): String {
@@ -24,7 +30,7 @@ object OpenAIService {
                     put("content", userMessage)
                 })
             })
-            put("max_tokens", 1000)
+            put("max_tokens", 2000)
         }
 
         val body = json.toString()

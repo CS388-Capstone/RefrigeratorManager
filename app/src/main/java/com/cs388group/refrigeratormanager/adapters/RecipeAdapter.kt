@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import com.cs388group.refrigeratormanager.R
 import com.cs388group.refrigeratormanager.data.Recipe
@@ -30,6 +32,12 @@ class RecipeAdapter(private val recipes: List<Recipe>) :
         holder.recipeName.text = recipe.name
         holder.recipeCalories.text = recipe.calories
         holder.recipeImage.setImageResource(recipe.imageResId)
+
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            Toast.makeText(context, recipe.name, Toast.LENGTH_SHORT).show()
+
+        }
     }
 
     override fun getItemCount(): Int = recipes.size
