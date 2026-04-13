@@ -34,12 +34,32 @@
             app:shapeAppearanceOverlay="@style/CircleImage" />
 
         <TextView
+            android:id="@+id/caloriesLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CALORIES"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/caloriesText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:text="N/A" />
+
+        <TextView
             android:id="@+id/locationLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="LOCATION"
             android:textStyle="bold"
             android:textSize="20sp"
+            android:paddingTop="16dp"
             android:paddingBottom="8dp" />
 
         <TextView

@@ -45,7 +45,7 @@ class HomeDataRepository {
 
     private fun loadCatalog(
         groupId: String,
-        onSuccess: (Map<String, String>) -> Unit,
+        onSuccess: (Map<String, Pair<String, Int?>>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         db.collection("groups")
@@ -55,7 +55,8 @@ class HomeDataRepository {
             .addOnSuccessListener { snapshot ->
                 val catalogMap = snapshot.documents.associate { doc ->
                     val name = doc.getString("name") ?: "Unknown Item"
-                    doc.id to name
+                    val calories = doc.getLong("calories")?.toInt()
+                    doc.id to (name to calories)
                 }
                 onSuccess(catalogMap)
             }
@@ -66,7 +67,7 @@ class HomeDataRepository {
 
     private fun loadLocationsAndFoodItems(
         groupId: String,
-        catalogMap: Map<String, String>,
+        catalogMap: Map<String, Pair<String, Int?>>,
         onSuccess: (List<HomeFoodItem>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -103,7 +104,9 @@ class HomeDataRepository {
                                         ?: foodDoc.getString("upc")
                                         ?: ""
 
-                                val itemName = catalogMap[catalogItemId] ?: "Unknown Item"
+                                val catalogData = catalogMap[catalogItemId]
+                                val itemName = catalogData?.first ?: "Unknown Item"
+                                val calories = catalogData?.second
 
                                 val expirationTimestamp =
                                     foodDoc.getTimestamp("expirationDate")
@@ -118,7 +121,9 @@ class HomeDataRepository {
                                         expirationDateText = formatTimestamp(expirationTimestamp),
                                         quantity = quantity,
                                         locationId = locationId,
-                                        locationName = locationName
+                                        locationName = locationName,
+                                        groupId = groupId,
+                                        calories = calories
                                     )
                                 )
                             }

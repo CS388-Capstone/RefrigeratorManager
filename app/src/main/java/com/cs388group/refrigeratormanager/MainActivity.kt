@@ -39,16 +39,14 @@ class MainActivity : AppCompatActivity() {
 
         val currentFirebaseUser = auth.currentUser
 
-
         if (currentFirebaseUser != null) {
-
             userRepo.getUser(currentFirebaseUser.uid) { userData ->
                 if (userData == null) {
-                    Log.e("MainActivity", "User was returned as null, this shouldn't happen since they just logged in.")
+                    Log.e("MainActivity", "User was returned as null")
                     return@getUser
                 }
 
-                val groupId = userData["groupId"] as? String
+                val groupId = userData["groupId"] as? String ?: userData["familyId"] as? String
                 if (groupId == null) {
                     Log.w("MainActivity", "User is not in a group, redirecting to Group Onboarding")
                     startActivity(Intent(this, GroupOnboardingActivity::class.java))
@@ -56,35 +54,29 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            /*
-            binding.btnScan.setOnClickListener {
-                val intent = Intent(this, BarcodeScannerActivity::class.java)
-                startActivity(intent)
-            }
-             */
-
-            val homeFragment = HomeFragment()
-            val scanFragment = ScanFragment()
-            val genAiFragment = GenAiFragment()
-            val settingsFragment = SettingsFragment()
-
-
             val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
             bottomNavigationView.setOnItemSelectedListener { item ->
-                lateinit var fragment: Fragment
-                when (item.itemId) {
-                    R.id.menu_item_home -> fragment = homeFragment
-                    R.id.menu_item_scan -> fragment = scanFragment
-                    R.id.menu_item_genai -> fragment = genAiFragment
-                    R.id.menu_item_settings -> fragment = settingsFragment
+                val currentFragment = supportFragmentManager.findFragmentById(R.id.main_frame_layout)
+                
+                val newFragment = when (item.itemId) {
+                    R.id.menu_item_home -> if (currentFragment !is HomeFragment) HomeFragment() else null
+                    R.id.menu_item_scan -> if (currentFragment !is ScanFragment) ScanFragment() else null
+                    R.id.menu_item_genai -> if (currentFragment !is GenAiFragment) GenAiFragment() else null
+                    R.id.menu_item_settings -> if (currentFragment !is SettingsFragment) SettingsFragment() else null
+                    else -> null
                 }
-                replaceFragment(fragment)
+                
+                newFragment?.let {
+                    replaceFragment(it)
+                }
                 true
             }
 
-            bottomNavigationView.selectedItemId = R.id.menu_item_home
-            replaceFragment(HomeFragment())
+            if (savedInstanceState == null) {
+                // Set default fragment via listener
+                bottomNavigationView.selectedItemId = R.id.menu_item_home
+            }
 
         } else { // user is not signed in
             startActivity(Intent(this, LoginActivity::class.java))
@@ -95,6 +87,7 @@ class MainActivity : AppCompatActivity() {
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_frame_layout, fragment)
+            .setReorderingAllowed(true)
             .commit()
     }
 }

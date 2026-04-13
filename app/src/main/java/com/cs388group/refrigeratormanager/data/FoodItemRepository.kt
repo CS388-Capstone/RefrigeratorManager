@@ -68,6 +68,16 @@ class FoodItemRepository {
         }
     }
 
+    fun deleteFoodItem(groupId: String, locationId: String, foodItemId: String) {
+        db.collection("groups")
+            .document(groupId)
+            .collection("locations")
+            .document(locationId)
+            .collection("foodItems")
+            .document(foodItemId)
+            .delete()
+    }
+
     fun getFoodItems(groupId: String, locationId: String, onResult: (List<Map<String, Any>>) -> Unit) {
         db.collection("groups")
             .document(groupId)

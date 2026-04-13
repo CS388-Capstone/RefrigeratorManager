@@ -7,5 +7,7 @@ data class HomeFoodItem(
     val expirationDateText: String,
     val quantity: Int,
     val locationId: String,
-    val locationName: String
+    val locationName: String,
+    val groupId: String,
+    val calories: Int? = null
 )

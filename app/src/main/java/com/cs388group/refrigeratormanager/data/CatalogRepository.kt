@@ -7,10 +7,11 @@ class CatalogRepository {
 
     private val db = Firebase.firestore
 
-    fun addCatalogItem(groupId: String, upc: String, name: String) {
+    fun addCatalogItem(groupId: String, upc: String, name: String, calories: Int?) {
         val item = hashMapOf(
             "name" to name,
-            "upc" to upc
+            "upc" to upc,
+            "calories" to calories
         )
         db.collection("groups")
             .document(groupId)
