@@ -7,7 +7,11 @@ package com.cs388group.refrigeratormanager.adapters
     import com.cs388group.refrigeratormanager.data.HomeFoodItem
     import com.cs388group.refrigeratormanager.databinding.ItemHomeFoodBinding
     import com.cs388group.refrigeratormanager.fragments.FoodDetailFragment
-
+    import com.google.firebase.Timestamp
+    import java.text.SimpleDateFormat
+    import java.util.Calendar
+    import java.util.Locale
+    import java.util.concurrent.TimeUnit
 class HomeFoodItemAdapter : RecyclerView.Adapter<HomeFoodItemAdapter.HomeFoodViewHolder>() {
 
         private val items = mutableListOf<HomeFoodItem>()
@@ -55,6 +59,9 @@ class HomeFoodItemAdapter : RecyclerView.Adapter<HomeFoodItemAdapter.HomeFoodVie
                     .addToBackStack(null)
                     .commit()
             }
+
+
+
         }
 
         override fun getItemCount(): Int = items.size
@@ -67,10 +74,75 @@ class HomeFoodItemAdapter : RecyclerView.Adapter<HomeFoodItemAdapter.HomeFoodVie
                 binding.tvItemName.text = item.itemName
                 binding.tvExpirationDate.text = "Expires: ${item.expirationDateText}"
                 binding.tvLocation.text = "Location: ${item.locationName}"
+                val daysLeft = calculateDaysRemaining(item.expirationDateText)
+                when {
+                    daysLeft == null -> {
+                        binding.tvDaysRemaining.text = "N/A"
+                    }
+                    daysLeft < 0 -> {
+                        binding.tvDaysRemaining.text = "Expired"
+                    }
+                    daysLeft == 0 -> {
+                        binding.tvDaysRemaining.text = "Today"
+                    }
+                    daysLeft == 1 -> {
+                        binding.tvDaysRemaining.text = "1 day"
+                    }
+                    else -> {
+                        binding.tvDaysRemaining.text = "$daysLeft days"
+                    }
+                }
+
+                when {
+                    daysLeft == null -> {
+                        binding.tvDaysRemaining.setBackgroundResource(R.drawable.bg_left_days_gray)
+                    }
+                    daysLeft < 0 -> {
+                        binding.tvDaysRemaining.setBackgroundResource(R.drawable.bg_left_days_red)
+                    }
+                    daysLeft <= 2 -> {
+                        binding.tvDaysRemaining.setBackgroundResource(R.drawable.bg_left_days_orange)
+                    }
+                    else -> {
+                        binding.tvDaysRemaining.setBackgroundResource(R.drawable.bg_left_days)
+                    }
+                }
 
 
             }
+            private fun calculateDaysRemaining(expirationText: String): Int? {
+                return try {
+                    val cleaned = expirationText.removePrefix("Exp: ").trim()
 
+                    val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                    formatter.isLenient = false
+
+                    val expirationDate = formatter.parse(cleaned) ?: return null
+
+                    val todayCal = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    val expirationCal = Calendar.getInstance().apply {
+                        time = expirationDate
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    val diffMillis = expirationCal.timeInMillis - todayCal.timeInMillis
+                    TimeUnit.MILLISECONDS.toDays(diffMillis).toInt()
+                } catch (e: Exception) {
+                    null
+                }
+            }
 
         }
+
+
+
     }
