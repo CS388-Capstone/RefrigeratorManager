@@ -43,7 +43,11 @@ class RecipesRepository {
 
     fun createRecipe(
         userId: String,
-        recipe: Recipe,
+        name: String,
+        calories: String,
+        description: String,
+        ingredients: Map<String, String>,
+        steps: List<String>,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -56,27 +60,30 @@ class RecipesRepository {
                     .document()
 
                 val recipeData = hashMapOf(
-                    "name" to recipe.name,
-                    "calories" to recipe.calories,
-                    "description" to recipe.description,
-                    "ingredients" to recipe.ingredients,
-                    "steps" to recipe.steps,
-                    "imageResId" to recipe.imageResId,
+                    "name" to name,
+                    "calories" to calories,
+                    "description" to description,
+                    "ingredients" to ingredients,
+                    "steps" to steps,
                     "createdAt" to FieldValue.serverTimestamp(),
-                    "updatedAt" to FieldValue.serverTimestamp()
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "favorited" to false
                 )
 
                 recipeRef.set(recipeData, SetOptions.merge())
                     .addOnSuccessListener {
-                        Log.d(TAG, "Created recipe ${recipe.name}")
+                        Log.d(TAG, "Created recipe ${name}")
                         onSuccess()
                     }
                     .addOnFailureListener { e ->
-                        Log.e(TAG, "Failed to create recipe ${recipe.name}", e)
+                        Log.e(TAG, "Failed to create recipe ${name}", e)
                         onFailure(e)
                     }
             },
-            onFailure = onFailure
+            onFailure = { error ->
+                Log.e(TAG, "error", error)
+
+            }
         )
     }
 
@@ -150,13 +157,17 @@ class RecipesRepository {
                                 ?.mapNotNull { it as? String }
                                 ?: emptyList()
 
+                            val favorited = doc.getBoolean("favorited") ?: false
+
                             Recipe(
+                                recipeId = doc.id,
                                 name = name,
                                 calories = calories,
                                 description = description,
                                 ingredients = ingredients,
                                 steps = steps,
-                                imageResId = R.drawable.sample_food
+                                imageResId = R.drawable.sample_food,
+                                favorited = favorited
                             )
                         }
 
@@ -253,15 +264,28 @@ class RecipesRepository {
                     .collection("recipes")
                     .get()
                     .addOnSuccessListener { snapshot ->
+
                         val batch = db.batch()
+                        var deleteCount = 0
 
                         for (doc in snapshot.documents) {
-                            batch.delete(doc.reference)
+                            val isFavorited = doc.getBoolean("favorited") ?: false
+
+                            if (!isFavorited) {
+                                batch.delete(doc.reference)
+                                deleteCount++
+                            }
+                        }
+
+                        if (deleteCount == 0) {
+                            Log.d(TAG, "No non-favorited recipes to delete")
+                            onSuccess()
+                            return@addOnSuccessListener
                         }
 
                         batch.commit()
                             .addOnSuccessListener {
-                                Log.d(TAG, "Cleared ${snapshot.documents.size} recipes")
+                                Log.d(TAG, "Deleted $deleteCount non-favorited recipes")
                                 onSuccess()
                             }
                             .addOnFailureListener { e ->
@@ -273,6 +297,33 @@ class RecipesRepository {
                         Log.e(TAG, "Failed to fetch recipes for clearing", e)
                         onFailure(e)
                     }
+            },
+            onFailure = onFailure
+        )
+    }
+
+    fun updateRecipeFavoriteStatus(
+        userId: String,
+        recipeId: String,
+        favorited: Boolean,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getUserGroupId(
+            userId = userId,
+            onSuccess = { groupId ->
+                db.collection("groups")
+                    .document(groupId)
+                    .collection("recipes")
+                    .document(recipeId)
+                    .update(
+                        mapOf(
+                            "favorited" to favorited,
+                            "updatedAt" to FieldValue.serverTimestamp()
+                        )
+                    )
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { e -> onFailure(e) }
             },
             onFailure = onFailure
         )

@@ -24,7 +24,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import android.widget.SearchView
 class GenAiFragment : Fragment() {
 
     private var _binding: FragmentGenAiBinding? = null
@@ -35,6 +35,7 @@ class GenAiFragment : Fragment() {
     private val recipesRepository = RecipesRepository()
 
     private val recipeList = mutableListOf<Recipe>()
+    private val allRecipes = mutableListOf<Recipe>()
     private lateinit var adapter: RecipeAdapter
 
     private var foodItems: List<HomeFoodItem> = emptyList()
@@ -58,9 +59,18 @@ class GenAiFragment : Fragment() {
         setupRecyclerView()
         loadRecipes()
 
+        setupSearchView()
         binding.refreshRecipesButton.setOnClickListener {
+            _binding?.progressBarAI?.visibility = View.VISIBLE
+            _binding?.recipeRecyclerView?.visibility = View.GONE
             val currentUser = Firebase.auth.currentUser ?: return@setOnClickListener
-
+            recipesRepository.clearRecipes(userId = currentUser.uid, onSuccess = {->
+                Log.d("OPENAI", "Recipes cleared")
+            },
+                onFailure = {
+                    Log.d("OPENAI", "Recipes cleared")
+                }
+            )
             val latestFoodNames = foodItems
                 .map { it.itemName.trim() }
                 .filter { it.isNotBlank() }
@@ -76,18 +86,91 @@ class GenAiFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = RecipeAdapter(recipeList)
+        adapter = RecipeAdapter(
+            recipeList,
+            onFavoriteClick = { recipe, newState ->
+                toggleFavorite(recipe, newState)
+            }
+        )
+
         binding.recipeRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recipeRecyclerView.adapter = adapter
+    }
+
+    private fun setupSearchView() {
+        binding.searchViewRecipe.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                filterRecipes(query.orEmpty())
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterRecipes(newText.orEmpty())
+                return true
+            }
+        })
+    }
+
+    private fun filterRecipes(query: String) {
+        val trimmedQuery = query.trim()
+
+        if (trimmedQuery.isBlank()) {
+
+            recipeList.clear()
+            recipeList.addAll(allRecipes)
+            adapter.notifyDataSetChanged()
+            return
+        }
+
+        val filtered = allRecipes.filter { recipe ->
+            val nameMatches = isSimilar(trimmedQuery, recipe.name) ||
+                    recipe.name.lowercase().contains(trimmedQuery.lowercase())
+
+            val ingredientMatches = recipe.ingredients.keys.any { ingredient ->
+                isSimilar(trimmedQuery, ingredient) ||
+                        ingredient.lowercase().contains(trimmedQuery.lowercase()) ||
+                        trimmedQuery.lowercase().contains(ingredient.lowercase())
+            }
+
+            nameMatches || ingredientMatches
+        }
+
+        recipeList.clear()
+        recipeList.addAll(filtered)
+        adapter.notifyDataSetChanged()
+    }
+    private fun toggleFavorite(recipe: Recipe, newState: Boolean) {
+        val currentUser = Firebase.auth.currentUser ?: return
+
+        val oldState = recipe.favorited
+        recipe.favorited = !oldState
+        adapter.notifyDataSetChanged()
+
+        recipesRepository.updateRecipeFavoriteStatus(
+            userId = currentUser.uid,
+            recipeId = recipe.recipeId ?: "",
+            favorited = newState,
+            onSuccess = {
+                Log.d("GenAiFragment", "Favorite updated: ${recipe.name} -> $newState")
+            },
+            onFailure = { e ->
+                adapter.notifyDataSetChanged()
+                Log.e("GenAiFragment", "Failed to update favorite", e)
+            }
+        )
     }
 
     private fun loadRecipes() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
             Log.e(TAG, "No current user")
+            _binding?.progressBarAI?.visibility = View.GONE
+            _binding?.recipeRecyclerView?.visibility = View.VISIBLE
             return
         }
 
+        _binding?.progressBarAI?.visibility = View.VISIBLE
+        _binding?.recipeRecyclerView?.visibility = View.GONE
         Log.d(TAG, "Starting loadRecipes for user=${currentUser.uid}")
 
         recipesRepository.getRecipes(currentUser.uid) { existingRecipes ->
@@ -97,9 +180,16 @@ class GenAiFragment : Fragment() {
 
             // Show cached/saved recipes immediately if they exist
             if (existingRecipes.isNotEmpty()) {
+                _binding?.progressBarAI?.visibility = View.GONE
+                _binding?.recipeRecyclerView?.visibility = View.VISIBLE
+
+                allRecipes.clear()
+                allRecipes.addAll(existingRecipes)
+
                 recipeList.clear()
                 recipeList.addAll(existingRecipes)
                 adapter.notifyDataSetChanged()
+
                 Log.d(TAG, "Displayed existing recipes")
             }
 
@@ -141,6 +231,8 @@ class GenAiFragment : Fragment() {
 
                         val shouldGenerate = when {
                             currCatalog.isEmpty() -> {
+                                _binding?.progressBarAI?.visibility = View.VISIBLE
+                                _binding?.recipeRecyclerView?.visibility = View.GONE
                                 Log.d(TAG, "Catalog is empty, should generate")
                                 currCatalog = currentFoodNames
                                 updateCatalog(userId)
@@ -152,6 +244,8 @@ class GenAiFragment : Fragment() {
                                 Log.d(TAG, "Catalog diff = $diff")
 
                                 if (diff >= 2) {
+                                    _binding?.progressBarAI?.visibility = View.VISIBLE
+                                    _binding?.recipeRecyclerView?.visibility = View.GONE
                                     Log.d(TAG, "Diff >= 2, should generate")
                                     currCatalog = currentFoodNames
                                     updateCatalog(userId)
@@ -168,9 +262,12 @@ class GenAiFragment : Fragment() {
                         } else {
                             if (hadExistingRecipes) {
                                 Log.d(TAG, "Keeping existing recipes")
+
                             } else {
                                 Log.d(TAG, "No existing recipes and no regeneration triggered")
                             }
+                            _binding?.progressBarAI?.visibility = View.GONE
+                            _binding?.recipeRecyclerView?.visibility = View.VISIBLE
                         }
                     }
                 )
@@ -211,7 +308,7 @@ class GenAiFragment : Fragment() {
                     Using the following ingredients:
                     $catalogString
                     
-                    Generate exactly 1 realistic, savory recipes that people would actually want to eat.
+                    Generate exactly 5 realistic, savory recipes that people would actually want to eat.
 
                     IMPORTANT RULES:
                     - You MUST return ONLY valid JSON. No extra text, no explanations, no markdown.
@@ -308,34 +405,53 @@ class GenAiFragment : Fragment() {
 
             val appRecipes = parsed.recipes.map {
                 Recipe(
+                    recipeId = null,
                     name = it.name,
                     calories = it.calories,
                     description = it.description,
                     ingredients = it.ingredients,
                     steps = it.steps,
-                    imageResId = R.drawable.sample_food
+                    imageResId = R.drawable.sample_food,
+                    favorited = false
                 )
             }
 
             Log.d(TAG, "Parsed appRecipes count = ${appRecipes.size}")
+
+            allRecipes.clear()
+            allRecipes.addAll(appRecipes)
 
             recipeList.clear()
             recipeList.addAll(appRecipes)
             adapter.notifyDataSetChanged()
 
             val currentUser = Firebase.auth.currentUser
+
+
             if (currentUser != null) {
-                recipesRepository.saveGeneratedRecipes(
-                    userId = currentUser.uid,
-                    recipes = appRecipes,
-                    onSuccess = {
-                        Log.d(TAG, "Saved generated recipes")
-                    },
-                    onFailure = { e ->
-                        Log.e(TAG, "Failed to save generated recipes", e)
-                    }
-                )
+
+
+                for(recipe in appRecipes){
+                    Log.d("OPENAI RECIPE", recipe.toString())
+                    recipesRepository.createRecipe(
+                        userId = currentUser.uid,
+                        name = recipe.name,
+                        calories = recipe.calories,
+                        description =recipe.description,
+                        ingredients=recipe.ingredients,
+                        steps=recipe.steps,
+                        onSuccess = {
+                            Log.d(TAG, "Saved generated recipes")
+                        },
+                        onFailure = { e ->
+                            Log.e(TAG, "Failed to save generated recipes", e)
+                        }
+                    )
+                }
             }
+            recipesRepository.getRecipes(currentUser!!.uid, onResult = {
+                loadRecipes()
+            })
         } catch (e: Exception) {
             Log.e("GenAiParse", "Parse error", e)
         }

@@ -11,7 +11,7 @@
         android:id="@+id/searchViewRecipe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="Search food items" />
+        android:queryHint="Search For Recipe (Recipe Name or Ingredient)" />
 
     <Button
         android:id="@+id/refreshRecipesButton"
@@ -19,6 +19,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Refresh Recipes" />
+
+    <ProgressBar
+        android:id="@+id/progressBarAI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recipeRecyclerView"

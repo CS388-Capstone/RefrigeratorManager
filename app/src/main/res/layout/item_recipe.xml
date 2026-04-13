@@ -7,13 +7,29 @@
     android:padding="8dp"
     android:background="@android:drawable/dialog_holo_light_frame">
 
-    <ImageView
-        android:id="@+id/recipeImage"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="140dp"
-        android:contentDescription="Recipe image"
-        android:scaleType="center"
-        android:src="@android:drawable/ic_menu_gallery" />
+        android:layout_height="140dp">
+
+        <ImageView
+            android:id="@+id/recipeImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Recipe image"
+            android:scaleType="center"
+            android:src="@android:drawable/ic_menu_gallery" />
+
+        <ImageView
+            android:id="@+id/starButton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_margin="8dp"
+            android:layout_gravity="top|start"
+            android:src="@drawable/ic_star_selector"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/recipeName"
@@ -21,9 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginLeft="8dp"
-        android:gravity="start"
         android:text="Meal Name"
-        android:textAlignment="viewStart"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -34,9 +48,7 @@
         android:layout_marginTop="2dp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
-        android:gravity="start"
         android:text="450 cal"
-        android:textAlignment="viewStart"
         android:textSize="14sp" />
 
 </LinearLayout>
