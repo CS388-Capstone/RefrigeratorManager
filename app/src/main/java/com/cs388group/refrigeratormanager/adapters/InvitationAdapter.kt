@@ -32,8 +32,8 @@ class InvitationAdapter(
     override fun onBindViewHolder(holder: InviteViewHolder, position: Int) {
         val invite = invites[position]
 
-        holder.groupText.text = "Group ${invite.groupName}"
-        holder.fromText.text = "Owned By ${invite.fromUserName}"
+        holder.groupText.text = "${invite.groupName}"
+        holder.fromText.text = "Owned By: ${invite.fromUserName}"
 
         holder.acceptButton.setOnClickListener {
             onAccept(invite)

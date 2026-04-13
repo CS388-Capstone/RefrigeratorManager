@@ -2,16 +2,20 @@ package com.cs388group.refrigeratormanager.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.cs388group.refrigeratormanager.R
+import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
 import com.cs388group.refrigeratormanager.activities.LoginActivity
+import com.cs388group.refrigeratormanager.data.GroupRepository
+import com.cs388group.refrigeratormanager.data.InvitationRepository
 import com.cs388group.refrigeratormanager.data.LocationRepository
 import com.cs388group.refrigeratormanager.data.UserRepository
 import com.cs388group.refrigeratormanager.databinding.FragmentSettingsBinding
@@ -25,6 +29,8 @@ class SettingsFragment : Fragment() {
 
     private val userRepository = UserRepository()
     private val locationRepository = LocationRepository()
+    private val groupRepository = GroupRepository()
+    private val invitationRepository = InvitationRepository()
     private var groupId: String? = null
 
     override fun onCreateView(
@@ -52,6 +58,32 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        binding.btnInviteMember.setOnClickListener {
+            val email = binding.etInvitationEmail.text.toString()
+            val user = Firebase.auth.currentUser
+            userRepository.getUser(user!!.uid,
+                onResult = { user ->
+                    val currentUserName = user!!["displayName"] as? String ?: "Unknown"
+                    invitationRepository.sendInvitation(groupId!!, currentUserName, email,
+                        onSuccess = {
+                            binding.etInvitationEmail.setText("")
+                            Toast.makeText(requireContext(), "Invitation sent", Toast.LENGTH_SHORT).show()
+                        },
+                        onFailure = {
+                            Log.e("SettingsFragment", "Failed to send invitation", it)
+                        })
+                })
+        }
+
+        binding.btnLeaveGroup.setOnClickListener {
+            val user = Firebase.auth.currentUser
+            if (user != null) {
+                groupRepository.removeMember(groupId!!, user.uid)
+                startActivity(Intent(requireContext(), GroupOnboardingActivity::class.java))
+                requireActivity().finish()
+            }
+        }
+
         binding.btnLogout.setOnClickListener {
             Firebase.auth.signOut()
             startActivity(Intent(requireContext(), LoginActivity::class.java))
@@ -59,6 +91,7 @@ class SettingsFragment : Fragment() {
         }
         
         binding.rvLocations.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvGroup.layoutManager = LinearLayoutManager(requireContext())
     }
 
     private fun loadUserData() {
@@ -68,6 +101,7 @@ class SettingsFragment : Fragment() {
                 groupId = data?.get("groupId") as? String ?: data?.get("familyId") as? String
                 if (groupId != null) {
                     loadLocations(groupId!!)
+                    loadGroupMembers(groupId!!)
                 }
             }
         }
@@ -83,6 +117,18 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun loadGroupMembers(groupId: String) {
+        groupRepository.getGroupMembers(groupId,
+            onResult = { members ->
+                if (isAdded && _binding != null) {
+                    binding.rvGroup.adapter = GroupMemberAdapter(members) { memberId ->
+                        groupRepository.removeMember(groupId, memberId)
+                        loadGroupMembers(groupId)
+                    }
+                }
+            })
     }
 
     private inner class LocationAdapter(
@@ -114,6 +160,41 @@ class SettingsFragment : Fragment() {
         }
 
         override fun getItemCount() = locations.size
+    }
+
+    private inner class GroupMemberAdapter(
+        private val members: List<String>,
+        private val onDeleteClick: (String) -> Unit
+    ) : RecyclerView.Adapter<GroupMemberAdapter.ViewHolder>() {
+
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val nameText: TextView = view.findViewById(android.R.id.text1)
+            val deleteText: TextView = view.findViewById(android.R.id.text2)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMemberAdapter.ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(android.R.layout.simple_list_item_2, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val memberId = members[position]
+            userRepository.getUser(memberId,
+                onResult = { member ->
+                    holder.nameText.text = member?.get("displayName") as? String ?: "Name Unknown"
+                    holder.itemView.setOnClickListener {
+                        groupRepository.removeMember(groupId!!, memberId)
+                    }
+                })
+            holder.itemView.setOnClickListener {
+                groupRepository.removeMember(groupId!!, memberId)
+            }
+            holder.deleteText.text = "Tap to remove"
+        }
+
+        override fun getItemCount() = members.size
+
     }
 
     override fun onDestroyView() {
