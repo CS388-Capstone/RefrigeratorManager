@@ -1,8 +1,11 @@
 package com.cs388group.refrigeratormanager.data
 
+import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.FieldValue.*
+import com.google.firebase.firestore.SetOptions
 
 class GroupRepository {
 
@@ -40,6 +43,46 @@ class GroupRepository {
         }.addOnSuccessListener { onSuccess() }.addOnFailureListener { e -> onFailure(e) }
     }
 
+
+    fun updateCatalogScreenshot(
+        userId: String,
+        data: List<String>,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+
+        db.collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { userDoc ->
+
+                val groupId = userDoc.getString("groupId")
+
+                if (groupId.isNullOrEmpty()) {
+                    onFailure(Exception("User has no groupId"))
+                    return@addOnSuccessListener
+                }
+
+                val updates = hashMapOf(
+                    "catalogScreenshot" to data,
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+
+                db.collection("groups")
+                    .document(groupId)
+                    .set(updates, SetOptions.merge())
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
     fun removeMember(groupId: String, userId: String) {
         val groupRef = db.collection("groups").document(groupId)
         groupRef.update("members", arrayRemove(userId))
@@ -72,6 +115,36 @@ class GroupRepository {
             }
             .addOnFailureListener {
                 onResult("Unknown Group")
+            }
+    }
+
+    fun getGroupCatalogScreenshot(userId: String, onResult: (List<String>) -> Unit){
+
+        db.collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { userDoc ->
+                val groupId = userDoc.getString("familyId")
+                    ?: userDoc.getString("groupId") // fallback for current repo naming
+
+                if (groupId.isNullOrBlank()) {
+                    onResult(emptyList())
+                    return@addOnSuccessListener
+                }
+                db.collection("groups").document(groupId)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        val snapshot = (doc.get("catalogScreenshot") as? List<*>)
+                            ?.mapNotNull { it as? String }
+                            ?: emptyList()
+
+                        onResult(snapshot)
+                    }.addOnFailureListener {
+                        onResult(emptyList())
+                    }
+            }
+            .addOnFailureListener { e ->
+                onResult(emptyList())
             }
     }
 
