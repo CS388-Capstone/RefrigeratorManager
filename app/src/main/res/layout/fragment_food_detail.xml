@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/foodTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FOOD NAME"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:paddingBottom="12dp" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/foodImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_food"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
+
+        <TextView
+            android:id="@+id/locationLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LOCATION"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/locationText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:text="Fridge" />
+
+        <TextView
+            android:id="@+id/quantityLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QUANTITY"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/quantityText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:text="1" />
+
+        <TextView
+            android:id="@+id/upcLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UPC"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/upcText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:text="2222222222" />
+
+        <TextView
+            android:id="@+id/expirationLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="EXPIRATION DATE"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/expirationText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:lineSpacingExtra="4dp"
+            android:background="@android:drawable/editbox_background"
+            android:text="April 23, 2026 at 12:40:06 AM UTC-4" />
+
+    </LinearLayout>
+</ScrollView>
