@@ -1,21 +1,25 @@
 package com.cs388group.refrigeratormanager.fragments
-import android.util.Log
+
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.cs388group.refrigeratormanager.adapters.HomeFoodItemAdapter
+import com.cs388group.refrigeratormanager.data.FoodItemRepository
 import com.cs388group.refrigeratormanager.data.HomeDataRepository
 import com.cs388group.refrigeratormanager.data.HomeFoodItem
 import com.cs388group.refrigeratormanager.databinding.FragmentHomeBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-
 
 class HomeFragment : Fragment() {
 
@@ -24,8 +28,9 @@ class HomeFragment : Fragment() {
 
     private val adapter = HomeFoodItemAdapter()
     private val homeDataRepository = HomeDataRepository()
+    private val foodItemRepository = FoodItemRepository()
 
-    private var allItems: List<HomeFoodItem> = emptyList()
+    private var allItems: MutableList<HomeFoodItem> = mutableListOf()
     private var searchQuery: String = ""
     private var selectedLocation: String = "All Locations"
 
@@ -49,6 +54,39 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         binding.recyclerViewFoodItems.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewFoodItems.adapter = adapter
+
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val itemToDelete = adapter.getItemAt(position)
+
+                // Remove from Firestore
+                foodItemRepository.removeFoodItem(
+                    groupId = itemToDelete.groupId,
+                    locationId = itemToDelete.locationId,
+                    foodItemId = itemToDelete.foodItemId
+                )
+
+                // Remove from local lists and update UI
+                allItems.remove(itemToDelete)
+                adapter.removeItem(position)
+                
+                Toast.makeText(requireContext(), "${itemToDelete.itemName} deleted", Toast.LENGTH_SHORT).show()
+                
+                if (adapter.itemCount == 0) {
+                    binding.tvEmptyState.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(binding.recyclerViewFoodItems)
     }
 
     private fun setupSearch() {
@@ -85,7 +123,7 @@ class HomeFragment : Fragment() {
                 val safeBinding = _binding ?: return@fetchHomeFoodItems
 
                 safeBinding.progressBarHome.visibility = View.GONE
-                allItems = items
+                allItems = items.toMutableList()
                 setupLocationSpinner(items)
                 applyFilters()
             },
@@ -93,15 +131,13 @@ class HomeFragment : Fragment() {
                 val safeBinding = _binding ?: return@fetchHomeFoodItems
 
                 safeBinding.progressBarHome.visibility = View.GONE
-                allItems = emptyList()
+                allItems = mutableListOf()
                 setupLocationSpinner(emptyList())
                 applyFilters()
                 safeBinding.tvEmptyState.visibility = View.VISIBLE
                 safeBinding.tvEmptyState.text = e.message ?: "Failed to load food items"
             }
         )
-        Log.d("HomeDebug", "currentUser uid = ${Firebase.auth.currentUser?.uid}")
-        Log.d("HomeDebug", "currentUser email = ${Firebase.auth.currentUser?.email}")
     }
 
     private fun setupLocationSpinner(items: List<HomeFoodItem>) {

@@ -14,7 +14,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.cs388group.refrigeratormanager.databinding.ActivityBarcodeScannerBinding
 import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -24,6 +26,8 @@ class BarcodeScannerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBarcodeScannerBinding
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var barcodeScanner: BarcodeScanner
+
+    private var isScanningFinished = false // Flag to prevent multiple finish calls
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -42,7 +46,18 @@ class BarcodeScannerActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
-        barcodeScanner = BarcodeScanning.getClient()
+
+        // Configure barcode scanner to focus on common retail formats for better accuracy
+        val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(
+                Barcode.FORMAT_UPC_A,
+                Barcode.FORMAT_UPC_E,
+                Barcode.FORMAT_EAN_13,
+                Barcode.FORMAT_EAN_8,
+                Barcode.FORMAT_CODE_128
+            )
+            .build()
+        barcodeScanner = BarcodeScanning.getClient(options)
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -99,6 +114,11 @@ class BarcodeScannerActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalGetImage::class)
     private fun processImageProxy(imageProxy: ImageProxy) {
+        if (isScanningFinished) {
+            imageProxy.close()
+            return
+        }
+
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -123,6 +143,9 @@ class BarcodeScannerActivity : AppCompatActivity() {
     }
 
     private fun onBarcodeDetected(barcode: String) {
+        if (isScanningFinished) return
+        isScanningFinished = true
+
         runOnUiThread {
             val resultIntent = Intent()
             resultIntent.putExtra("SCAN_RESULT", barcode)
@@ -134,6 +157,7 @@ class BarcodeScannerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+        barcodeScanner.close()
     }
 
     companion object {

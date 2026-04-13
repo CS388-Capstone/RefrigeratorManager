@@ -27,6 +27,15 @@
                 android:text="Milk" />
 
             <TextView
+                android:id="@+id/tvCalories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Calories: 150 kcal"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="14sp" />
+
+            <TextView
                 android:id="@+id/tvExpirationDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

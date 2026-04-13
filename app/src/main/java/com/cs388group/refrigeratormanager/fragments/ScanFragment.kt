@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import com.cs388group.refrigeratormanager.BarcodeScannerActivity
 import com.cs388group.refrigeratormanager.data.*
 import com.cs388group.refrigeratormanager.databinding.FragmentScanBinding
@@ -40,9 +42,11 @@ class ScanFragment : Fragment() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val barcode = result.data?.getStringExtra("SCAN_RESULT")
-            if (barcode != null) {
-                binding.etBarcode.setText(barcode)
-                lookupCatalogItem(barcode)
+            _binding?.let { b ->
+                if (barcode != null) {
+                    b.etBarcode.setText(barcode)
+                    // lookupCatalogItem is now handled by the text watcher on etBarcode
+                }
             }
         }
     }
@@ -61,8 +65,18 @@ class ScanFragment : Fragment() {
         loadUserData()
 
         binding.btnOpenScanner.setOnClickListener {
-            val intent = Intent(requireContext(), BarcodeScannerActivity::class.java)
-            scanBarcodeLauncher.launch(intent)
+            if (isAdded && viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                val intent = Intent(requireContext(), BarcodeScannerActivity::class.java)
+                scanBarcodeLauncher.launch(intent)
+            }
+        }
+
+        binding.etBarcode.doAfterTextChanged { text ->
+            val barcode = text?.toString()?.trim()
+            // Standard UPC barcodes are usually 8, 12, or 13 digits
+            if (!barcode.isNullOrBlank() && (barcode.length == 8 || barcode.length == 12 || barcode.length == 13)) {
+                lookupCatalogItem(barcode)
+            }
         }
 
         binding.etExpirationDate.setOnClickListener {
@@ -78,12 +92,14 @@ class ScanFragment : Fragment() {
         val user = Firebase.auth.currentUser
         if (user != null) {
             userRepository.getUser(user.uid) { data ->
-                // Check both groupId and familyId as seen in HomeDataRepository
+                if (!isAdded) return@getUser
                 groupId = data?.get("groupId") as? String ?: data?.get("familyId") as? String
                 if (groupId != null) {
                     loadLocations(groupId!!)
                 } else {
-                    Toast.makeText(requireContext(), "No group found for user", Toast.LENGTH_SHORT).show()
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "No group found for user", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -91,6 +107,7 @@ class ScanFragment : Fragment() {
 
     private fun loadLocations(groupId: String) {
         locationRepository.getGroupLocations(groupId) { locations ->
+            if (!isAdded) return@getGroupLocations
             locationsList.clear()
             val names = mutableListOf<String>()
             for (loc in locations) {
@@ -100,10 +117,10 @@ class ScanFragment : Fragment() {
                 names.add(name)
             }
             
-            if (isAdded) {
+            _binding?.let { b ->
                 val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names)
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                binding.spinnerLocation.adapter = adapter
+                b.spinnerLocation.adapter = adapter
             }
         }
     }
@@ -111,24 +128,29 @@ class ScanFragment : Fragment() {
     private fun lookupCatalogItem(upc: String) {
         val currentGroupId = groupId ?: return
         catalogRepository.getCatalogItem(currentGroupId, upc) { item ->
-            if (item != null) {
+            if (item != null && _binding != null) {
                 val name = item["name"] as? String
+                val calories = item["calories"]?.toString()
                 if (name != null) {
                     binding.etItemName.setText(name)
+                }
+                if (calories != null) {
+                    binding.etCalories.setText(calories)
                 }
             }
         }
     }
 
     private fun showDatePicker() {
+        val context = context ?: return
         val datePickerDialog = DatePickerDialog(
-            requireContext(),
+            context,
             { _, year, month, dayOfMonth ->
                 selectedCalendar.set(Calendar.YEAR, year)
                 selectedCalendar.set(Calendar.MONTH, month)
                 selectedCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 val format = SimpleDateFormat("MM/dd/yyyy", Locale.US)
-                binding.etExpirationDate.setText(format.format(selectedCalendar.time))
+                _binding?.etExpirationDate?.setText(format.format(selectedCalendar.time))
             },
             selectedCalendar.get(Calendar.YEAR),
             selectedCalendar.get(Calendar.MONTH),
@@ -139,11 +161,12 @@ class ScanFragment : Fragment() {
 
     private fun saveItem() {
         val currentGroupId = groupId ?: run {
-            Toast.makeText(requireContext(), "Group not loaded", Toast.LENGTH_SHORT).show()
+            if (isAdded) Toast.makeText(requireContext(), "Group not loaded", Toast.LENGTH_SHORT).show()
             return
         }
         val upc = binding.etBarcode.text.toString()
         val itemName = binding.etItemName.text.toString()
+        val caloriesStr = binding.etCalories.text.toString()
         val quantityStr = binding.etQuantity.text.toString()
         val expirationDateStr = binding.etExpirationDate.text.toString()
 
@@ -152,6 +175,7 @@ class ScanFragment : Fragment() {
             return
         }
 
+        val calories = caloriesStr.toIntOrNull()
         val quantity = quantityStr.toIntOrNull() ?: 1
         val expirationDate = Timestamp(selectedCalendar.time)
 
@@ -164,22 +188,28 @@ class ScanFragment : Fragment() {
 
         foodItemRepository.addFoodItem(currentGroupId, locationId, upc, expirationDate, quantity,
             onSuccess = {
-                // Update or add to catalog so future scans of the same UPC auto-fill the name
-                catalogRepository.addCatalogItem(currentGroupId, upc, itemName)
-                Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
-                clearFields()
+                if (isAdded) {
+                    catalogRepository.addCatalogItem(currentGroupId, upc, itemName, calories)
+                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+                    clearFields()
+                }
             },
             onFailure = {
-                Toast.makeText(requireContext(), "Failed to save item: ${it.message}", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Failed to save item: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         )
     }
 
     private fun clearFields() {
-        binding.etBarcode.setText("")
-        binding.etItemName.setText("")
-        binding.etQuantity.setText("1")
-        binding.etExpirationDate.setText("")
+        _binding?.let { b ->
+            b.etBarcode.setText("")
+            b.etItemName.setText("")
+            b.etCalories.setText("")
+            b.etQuantity.setText("1")
+            b.etExpirationDate.setText("")
+        }
     }
 
     override fun onDestroyView() {

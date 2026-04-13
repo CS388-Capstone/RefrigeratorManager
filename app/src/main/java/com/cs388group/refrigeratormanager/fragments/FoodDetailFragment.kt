@@ -30,12 +30,14 @@ class FoodDetailFragment : Fragment() {
         val quantity = arguments?.getString("quantity") ?: "0"
         val upc = arguments?.getString("upc") ?: "N/A"
         val expirationDate = arguments?.getString("expirationDate") ?: "Unknown"
+        val calories = arguments?.getInt("calories", -1).takeIf { it != -1 }
 
         binding.foodTitle.text = foodName
         binding.locationText.text = foodLocation
         binding.quantityText.text = quantity
         binding.upcText.text = upc
         binding.expirationText.text = expirationDate
+        binding.caloriesText.text = if (calories != null) "$calories kcal" else "N/A"
         binding.foodImage.setImageResource(R.drawable.sample_food)
     }
 
