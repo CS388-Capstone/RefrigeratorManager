@@ -128,16 +128,30 @@ An app that allows the user to scan barcodes on the products in their refrigerat
 
 ## GitHub Project board
 
-[Add screenshot of your Project Board with the updated status of issues for Milestone 3. Note that these should include the updated issues you worked on for this sprint and not be a duplicate of Milestone 2 Project board.] <img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
+<img width="695" height="860" alt="image" src="https://github.com/user-attachments/assets/b3ee55f4-f11a-4a25-814d-bb08e3dc9ca9" />
 
 ## Completed user stories
 
 - List the completed user stories from this unit
+  
+  users can log in and make a group
+  
+  users can scan a barcode and if it is in the catalog the data will autpfill
+  
+  users can manage storage locations
+  
 - List any pending user stories / any user stories you decided to cut
 from the original requirements
 
-[Add video/gif of your current application that shows build progress]
-<img src="YOUR_WIREFRAME_IMAGE_URL" width=600>
+  users can send an invite to another users so they can join a group
+  
+  users can get a notification if a food item will expire
+  
+  users can go to settings and change theme and notifications settings
+  
+![milestone3](https://github.com/user-attachments/assets/384432f2-9265-4e89-8e1b-f53de4fb90a6)
+
+
 
 ## App Demo Video
 
