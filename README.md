@@ -139,11 +139,11 @@ An app that allows the user to scan barcodes on the products in their refrigerat
   users can scan a barcode and if it is in the catalog the data will autpfill
   
   users can manage storage locations
+
+  users can send an invite to another users so they can join a group
   
 - List any pending user stories / any user stories you decided to cut
 from the original requirements
-
-  users can send an invite to another users so they can join a group
   
   users can get a notification if a food item will expire
   
