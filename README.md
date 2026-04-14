@@ -128,7 +128,7 @@ An app that allows the user to scan barcodes on the products in their refrigerat
 
 ## GitHub Project board
 
-<img width="695" height="860" alt="image" src="https://github.com/user-attachments/assets/b3ee55f4-f11a-4a25-814d-bb08e3dc9ca9" />
+<img width="445" height="663" alt="image" src="https://github.com/user-attachments/assets/0794d15c-056c-4a39-bc66-e63cf213b8ae" />
 
 ## Completed user stories
 
