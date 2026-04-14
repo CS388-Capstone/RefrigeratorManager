@@ -86,6 +86,8 @@ class GroupRepository {
     fun removeMember(groupId: String, userId: String) {
         val groupRef = db.collection("groups").document(groupId)
         groupRef.update("members", arrayRemove(userId))
+        val userRef = db.collection("users").document(userId)
+        userRef.update("groupId", null)
     }
 
     fun deleteGroup(groupId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
@@ -98,10 +100,9 @@ class GroupRepository {
     fun getGroupMembers(groupId: String, onResult: (List<String>) -> Unit) {
         db.collection("groups")
             .document(groupId)
-            .collection("members")
             .get()
-            .addOnSuccessListener { snapshot ->
-                val members = snapshot.documents.map { it.id }
+            .addOnSuccessListener { doc ->
+                val members = (doc.get("members") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 onResult(members)
             }
     }
@@ -113,7 +114,8 @@ class GroupRepository {
                 val name = doc.getString("name") ?: "Unknown Group"
                 onResult(name)
             }
-            .addOnFailureListener {
+            .addOnFailureListener { e ->
+                Log.e("GroupRepository", "Error loading group name", e)
                 onResult("Unknown Group")
             }
     }
