@@ -1,6 +1,8 @@
 package com.cs388group.refrigeratormanager.fragments
 
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.Group
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -44,6 +46,7 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupDarkModeSwitch()
         loadUserData()
 
         binding.btnAddLocation.setOnClickListener {
@@ -92,6 +95,22 @@ class SettingsFragment : Fragment() {
         
         binding.rvLocations.layoutManager = LinearLayoutManager(requireContext())
         binding.rvGroup.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun setupDarkModeSwitch() {
+        val sharedPrefs = requireActivity().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val isDarkMode = sharedPrefs.getBoolean("dark_mode", (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES)
+        
+        binding.switchDarkMode.isChecked = isDarkMode
+        
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            sharedPrefs.edit().putBoolean("dark_mode", isChecked).apply()
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        }
     }
 
     private fun loadUserData() {
