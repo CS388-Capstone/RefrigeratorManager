@@ -123,7 +123,8 @@ class SettingsFragment : Fragment() {
         groupRepository.getGroupMembers(groupId,
             onResult = { members ->
                 if (isAdded && _binding != null) {
-                    binding.rvGroup.adapter = GroupMemberAdapter(members) { memberId ->
+                    binding.rvGroup.adapter = GroupMemberAdapter(members, Firebase.auth.currentUser?.uid,
+                        ) { memberId ->
                         groupRepository.removeMember(groupId, memberId)
                         loadGroupMembers(groupId)
                     }
@@ -164,6 +165,7 @@ class SettingsFragment : Fragment() {
 
     private inner class GroupMemberAdapter(
         private val members: List<String>,
+        private val currentUserId: String?,
         private val onDeleteClick: (String) -> Unit
     ) : RecyclerView.Adapter<GroupMemberAdapter.ViewHolder>() {
 
@@ -186,11 +188,19 @@ class SettingsFragment : Fragment() {
                     holder.itemView.setOnClickListener {
                         groupRepository.removeMember(groupId!!, memberId)
                     }
-                })
-            holder.itemView.setOnClickListener {
-                groupRepository.removeMember(groupId!!, memberId)
+                }
+            )
+
+            if (memberId == currentUserId) {
+                holder.deleteText.text = "You"
+                holder.itemView.setOnClickListener(null)
+                holder.itemView.isClickable = false
+            } else {
+                holder.deleteText.text = "Tap to delete"
+                holder.itemView.setOnClickListener {
+                    onDeleteClick(memberId)
+                }
             }
-            holder.deleteText.text = "Tap to remove"
         }
 
         override fun getItemCount() = members.size
