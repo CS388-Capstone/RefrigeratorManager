@@ -1,9 +1,39 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.RefrigeratorManager" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Main colors -->
+        <item name="colorPrimary">@color/teal_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/mint_container</item>
+        <item name="colorOnPrimaryContainer">@color/teal_primary</item>
+
+        <!-- Bottom Nav colors (Material 3) -->
+        <item name="colorSecondaryContainer">@color/mint_container</item>
+        <item name="colorOnSecondaryContainer">@color/teal_primary</item>
+        <item name="colorOnSurfaceVariant">#454F50</item> <!-- Darker grey/teal for unselected items -->
+
+        <!-- Background colors -->
+        <item name="android:windowBackground">@color/light_bg</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorSurfaceVariant">@color/white</item>
+        <item name="colorSurfaceContainer">@color/white</item>
+
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.App.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.App.ExtraLargeComponent</item>
     </style>
 
     <style name="Theme.RefrigeratorManager" parent="Base.Theme.RefrigeratorManager" />
+
+    <!-- Rounded corners for buttons and fields -->
+    <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ShapeAppearance.App.ExtraLargeComponent" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">28dp</item>
+    </style>
 </resources>

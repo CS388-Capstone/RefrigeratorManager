@@ -1,5 +1,6 @@
 package com.cs388group.refrigeratormanager
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,7 @@ import com.cs388group.refrigeratormanager.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.app.AppCompatDelegate
 import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
 import com.cs388group.refrigeratormanager.activities.LoginActivity
 import com.cs388group.refrigeratormanager.data.UserRepository
@@ -24,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var userRepo = UserRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applySettings()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -81,6 +84,18 @@ class MainActivity : AppCompatActivity() {
         } else { // user is not signed in
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+    }
+
+    private fun applySettings() {
+        val sharedPrefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (sharedPrefs.contains("dark_mode")) {
+            val isDarkMode = sharedPrefs.getBoolean("dark_mode", false)
+            if (isDarkMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
         }
     }
 

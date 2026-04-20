@@ -1,7 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.RefrigeratorManager" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Main colors -->
+        <item name="colorPrimary">@color/teal_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">#2A5D62</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+
+        <!-- Bottom Nav colors -->
+        <item name="colorSecondaryContainer">#2A5D62</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+        <item name="colorOnSurfaceVariant">#B0BEC5</item>
+
+        <!-- Background colors -->
+        <item name="android:windowBackground">#121212</item>
+        <item name="colorSurface">#1A1C1E</item>
+        <item name="colorSurfaceVariant">#1A1C1E</item>
     </style>
 </resources>
