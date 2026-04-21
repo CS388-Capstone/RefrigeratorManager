@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cs388group.refrigeratormanager.activities.GroupOnboardingActivity
@@ -95,6 +96,8 @@ class SettingsFragment : Fragment() {
         
         binding.rvLocations.layoutManager = LinearLayoutManager(requireContext())
         binding.rvGroup.layoutManager = LinearLayoutManager(requireContext())
+        
+        setupGroupSwipe()
     }
 
     private fun setupDarkModeSwitch() {
@@ -142,13 +145,43 @@ class SettingsFragment : Fragment() {
         groupRepository.getGroupMembers(groupId,
             onResult = { members ->
                 if (isAdded && _binding != null) {
-                    binding.rvGroup.adapter = GroupMemberAdapter(members, Firebase.auth.currentUser?.uid,
-                        ) { memberId ->
-                        groupRepository.removeMember(groupId, memberId)
-                        loadGroupMembers(groupId)
-                    }
+                    binding.rvGroup.adapter = GroupMemberAdapter(members, Firebase.auth.currentUser?.uid)
                 }
             })
+    }
+
+    private fun setupGroupSwipe() {
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val adapter = binding.rvGroup.adapter as? GroupMemberAdapter ?: return
+                val memberId = adapter.getMemberId(position)
+
+                if (groupId != null) {
+                    groupRepository.removeMember(groupId!!, memberId)
+                    loadGroupMembers(groupId!!)
+                    Toast.makeText(requireContext(), "Member removed", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                val position = viewHolder.adapterPosition
+                val adapter = binding.rvGroup.adapter as? GroupMemberAdapter ?: return 0
+                val memberId = adapter.getMemberId(position)
+                
+                // Don't allow swiping the current user
+                if (memberId == Firebase.auth.currentUser?.uid) return 0
+                
+                return super.getSwipeDirs(recyclerView, viewHolder)
+            }
+        }
+        ItemTouchHelper(swipeHandler).attachToRecyclerView(binding.rvGroup)
     }
 
     private inner class LocationAdapter(
@@ -184,14 +217,15 @@ class SettingsFragment : Fragment() {
 
     private inner class GroupMemberAdapter(
         private val members: List<String>,
-        private val currentUserId: String?,
-        private val onDeleteClick: (String) -> Unit
+        private val currentUserId: String?
     ) : RecyclerView.Adapter<GroupMemberAdapter.ViewHolder>() {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val nameText: TextView = view.findViewById(android.R.id.text1)
             val deleteText: TextView = view.findViewById(android.R.id.text2)
         }
+
+        fun getMemberId(position: Int) = members[position]
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMemberAdapter.ViewHolder {
             val view = LayoutInflater.from(parent.context)
@@ -201,29 +235,25 @@ class SettingsFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val memberId = members[position]
+            
+            // Initial state
+            holder.nameText.text = "Loading..."
+            holder.deleteText.text = ""
+            holder.itemView.setOnClickListener(null)
+            
             userRepository.getUser(memberId,
                 onResult = { member ->
                     holder.nameText.text = member?.get("displayName") as? String ?: "Name Unknown"
-                    holder.itemView.setOnClickListener {
-                        groupRepository.removeMember(groupId!!, memberId)
+                    if (memberId == currentUserId) {
+                        holder.deleteText.text = "You"
+                    } else {
+                        holder.deleteText.text = "Member (Slide to remove)"
                     }
                 }
             )
-
-            if (memberId == currentUserId) {
-                holder.deleteText.text = "You"
-                holder.itemView.setOnClickListener(null)
-                holder.itemView.isClickable = false
-            } else {
-                holder.deleteText.text = "Tap to delete"
-                holder.itemView.setOnClickListener {
-                    onDeleteClick(memberId)
-                }
-            }
         }
 
         override fun getItemCount() = members.size
-
     }
 
     override fun onDestroyView() {
