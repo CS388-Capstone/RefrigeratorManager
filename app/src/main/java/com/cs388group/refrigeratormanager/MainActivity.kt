@@ -19,6 +19,14 @@ import com.cs388group.refrigeratormanager.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.cs388group.refrigeratormanager.notifications.NotificationsHelper
+import com.cs388group.refrigeratormanager.notifications.NotificationsScheduler
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -54,7 +62,15 @@ class MainActivity : AppCompatActivity() {
                     Log.w("MainActivity", "User is not in a group, redirecting to Group Onboarding")
                     startActivity(Intent(this, GroupOnboardingActivity::class.java))
                     finish()
+                } else {
+                    NotificationsScheduler.scheduleDailyExpirationCheck(
+                        applicationContext,
+                        groupId = groupId,
+                        thresholdDays = 2
+                    )
+                    Log.d("MainActivity", "Scheduled daily expiration notifications for groupId=$groupId")
                 }
+
             }
 
             val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
@@ -75,10 +91,26 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
-
             if (savedInstanceState == null) {
                 // Set default fragment via listener
                 bottomNavigationView.selectedItemId = R.id.menu_item_home
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        1001
+                    )
+                } else {
+                    NotificationsHelper.createNotificationChannel(this)
+                }
+            } else {
+                NotificationsHelper.createNotificationChannel(this)
             }
 
         } else { // user is not signed in
@@ -86,7 +118,20 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
+        if (requestCode == 1001 &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationsHelper.createNotificationChannel(this)
+        }
+    }
     private fun applySettings() {
         val sharedPrefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
         if (sharedPrefs.contains("dark_mode")) {

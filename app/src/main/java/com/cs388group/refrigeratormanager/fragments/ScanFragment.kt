@@ -16,6 +16,7 @@ import androidx.lifecycle.Lifecycle
 import com.cs388group.refrigeratormanager.BarcodeScannerActivity
 import com.cs388group.refrigeratormanager.data.*
 import com.cs388group.refrigeratormanager.databinding.FragmentScanBinding
+import com.cs388group.refrigeratormanager.notifications.NotificationsHelper
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -190,6 +191,39 @@ class ScanFragment : Fragment() {
             onSuccess = {
                 if (isAdded) {
                     catalogRepository.addCatalogItem(currentGroupId, upc, itemName, calories)
+
+                    val expirationMillis = expirationDate.toDate().time
+                    val nowMillis = System.currentTimeMillis()
+                    val locationName = locationsList[selectedPosition].second
+
+                    if (expirationMillis < nowMillis) {
+                        //Already expired
+                        NotificationsHelper.createNotificationChannel(requireContext())
+                        NotificationsHelper.showSingleNotification(
+                            requireContext(),
+                            "Expired food item",
+                            "$itemName in $locationName is already expired"
+                        )
+                    } else {
+                        //Expiring soon
+                        val daysLeft = (expirationMillis - nowMillis) / (1000 * 60 * 60 * 24)
+
+                        if (daysLeft in 0..2) {
+                            val message = when (daysLeft) {
+                                0L -> "$itemName in $locationName expires today"
+                                1L -> "$itemName in $locationName expires tomorrow"
+                                else -> "$itemName in $locationName expires in $daysLeft days"
+                            }
+
+                            NotificationsHelper.createNotificationChannel(requireContext())
+                            NotificationsHelper.showSingleNotification(
+                                requireContext(),
+                                "Food expiring soon",
+                                message
+                            )
+                        }
+                    }
+
                     Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
                     clearFields()
                 }
