@@ -76,6 +76,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 
+    //Worker
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+
     // Open AI
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     testImplementation(libs.junit)
