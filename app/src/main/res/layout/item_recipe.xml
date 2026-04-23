@@ -16,8 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="Recipe image"
-            android:scaleType="center"
-            android:src="@android:drawable/ic_menu_gallery" />
+            android:scaleType="centerInside"
+            android:src="@drawable/sample_recipes" />
 
         <ImageView
             android:id="@+id/starButton"

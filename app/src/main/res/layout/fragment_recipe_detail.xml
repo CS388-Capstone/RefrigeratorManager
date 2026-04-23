@@ -29,8 +29,8 @@
             android:layout_height="200dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/sample_food"
+            android:scaleType="centerInside"
+            android:src="@drawable/sample_recipes"
             app:shapeAppearanceOverlay="@style/CircleImage" />
 
         <TextView
