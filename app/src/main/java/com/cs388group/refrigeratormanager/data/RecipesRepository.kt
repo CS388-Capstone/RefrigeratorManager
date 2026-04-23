@@ -166,7 +166,7 @@ class RecipesRepository {
                                 description = description,
                                 ingredients = ingredients,
                                 steps = steps,
-                                imageResId = R.drawable.sample_food,
+                                imageResId = R.drawable.sample_recipes,
                                 favorited = favorited
                             )
                         }
